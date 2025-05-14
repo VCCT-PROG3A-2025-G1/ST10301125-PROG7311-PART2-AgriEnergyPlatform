@@ -26,26 +26,26 @@ namespace AgriEnergyPlatform.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
+
+            if (result.Succeeded)
             {
                 var user = await _userManager.FindByEmailAsync(model.Email);
-                if (user != null)
-                {
-                    var result = await _signInManager.PasswordSignInAsync(user, model.Password, model.RememberMe, false);
-                    if (result.Succeeded)
-                    {
-                        if (await _userManager.IsInRoleAsync(user, "Farmer"))
-                            return RedirectToAction("FarmerDashboard", "Farmer");
-                        else if (await _userManager.IsInRoleAsync(user, "Employee"))
-                            return RedirectToAction("EmployeeDashboard", "Employee");
-                        else
-                            return RedirectToAction("Index", "Home");
-                    }
-                }
+                var roles = await _userManager.GetRolesAsync(user);
 
-                ViewData["ErrorMessage"] = "Invalid login attempt.";
+                if (roles.Contains("Farmer"))
+                    return RedirectToAction("FarmerDashboard", "Farmer");
+
+                if (roles.Contains("Employee"))
+                    return RedirectToAction("EmployeeDashboard", "Employee");
+                
+                return RedirectToAction("Index", "Home");
             }
-
+                        
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             return View(model);
         }
 
@@ -53,7 +53,7 @@ namespace AgriEnergyPlatform.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return RedirectToAction("Login", "Account");
+            return RedirectToAction("Index", "Home");
         }
     }
 }

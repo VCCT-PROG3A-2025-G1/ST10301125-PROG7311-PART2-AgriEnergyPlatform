@@ -59,3 +59,26 @@ VALUES
 GO
 
 SELECT * FROM Employees;
+
+DROP TABLE Employees;
+
+DROP TABLE Products;
+
+DROP TABLE Farmer;
+
+EXEC sp_help 'AspNetUsers';
+
+SELECT COLUMN_NAME, IS_NULLABLE, DATA_TYPE
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_NAME = 'AspNetUsers';
+
+ALTER TABLE AspNetUsers DROP COLUMN Name;
+
+SELECT FarmerName FROM AspNetUsers;
+
+SELECT * FROM AspNetUsers;
+
+ALTER TABLE AspNetUsers
+ALTER COLUMN FarmerName VARCHAR(100) NULL;  -- Makes FarmerName nullable
+ALTER TABLE AspNetUsers
+ALTER COLUMN EmployeeName VARCHAR(100) NULL;  -- Makes EmployeeName nullable

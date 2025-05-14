@@ -1,6 +1,46 @@
-﻿namespace AgriEnergyPlatform.Views.Employee
-{
-    public class AddFarmer
-    {
-    }
+﻿@model AgriEnergyPlatform.Models.Farmer
+
+@{
+    ViewData["Title"] = "Add Farmer";
+}
+
+<h1 class="text-center pb-2">Add New Farmer</h1>
+
+<div class="row">
+    <div class="col-lg-9 mx-auto rounded border px-3 py-4 bg-light shadow-sm">
+        <form asp-action="AddFarmer" asp-controller="Farmer" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="form-group mb-3">
+                <label asp-for="FarmerName" class="form-label">Farmer Name</label>
+                <input asp-for="FarmerName" class="form-control" />
+                <span asp-validation-for="FarmerName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="FarmerPNumber" class="form-label">Phone Number</label>
+                <input asp-for="FarmerPNumber" class="form-control" />
+                <span asp-validation-for="FarmerPNumber" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="UserId" class="form-label">User ID (optional)</label>
+                <input asp-for="UserId" class="form-control" />
+                <span asp-validation-for="UserId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-success w-100">➕ Add Farmer</button>
+            </div>
+
+            @if (!string.IsNullOrEmpty(ViewData["ErrorMessage"] as string))
+            {
+                <div class="alert alert-danger mt-3">@ViewData["ErrorMessage"]</div>
+            }
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }

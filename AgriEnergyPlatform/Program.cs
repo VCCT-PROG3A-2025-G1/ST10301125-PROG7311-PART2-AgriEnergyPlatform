@@ -1,48 +1,69 @@
+using Microsoft.Extensions.Configuration;
 using AgriEnergyPlatform.Data;
+using AgriEnergyPlatform.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using AgriEnergyConnectApp.Data;
 
 namespace AgriEnergyPlatform
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add databsse.
+            // Add database context
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // Register Identity
+            // Register Identity with ApplicationUser and IdentityRole
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-            .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
 
-            // Add services to the container.
+            // Add controllers with views (MVC)
             builder.Services.AddControllersWithViews();
 
+            // Add session services
+            builder.Services.AddSession();
+
+            // Build the application
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (!app.Environment.IsDevelopment())
-            {
-                app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
-
+            // Use HTTPS redirection, static files, routing, etc.
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
+
+            // Set up routing
             app.UseRouting();
 
+            // Set up authentication and authorization
+            app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapStaticAssets();
+            // Enable session middleware
+            app.UseSession();
+
+            // Run the database seeding method after the app is built
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var context = services.GetRequiredService<ApplicationDbContext>();
+                var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+                var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+                await DBInitializer.SeedData(context, userManager, roleManager); // This is where the error occurred
+            }
+
+
+            // Map default controller route
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}")
-                .WithStaticAssets();
+                pattern: "{controller=Home}/{action=Index}/{id?}");
 
+            // Run the app
             app.Run();
         }
     }
